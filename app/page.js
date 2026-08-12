@@ -377,7 +377,6 @@ export default function Home() {
             return null;
         }
 
-        // ID BACKGROUND
         const background =
             await loadImage(
                 "/hackerhouse-bg.jpeg"
@@ -761,66 +760,66 @@ export default function Home() {
         );
     }
 
-return (
-    <main
-        style={{
-            minHeight:
-                "100vh",
+    return (
+        <main
+            style={{
+                minHeight:
+                    "100vh",
 
-            margin: 0,
+                margin: 0,
 
-            padding: 0,
+                padding: 0,
 
-            fontFamily:
-                "Arial, Helvetica, sans-serif",
+                fontFamily:
+                    "Arial, Helvetica, sans-serif",
 
-            backgroundImage:
-                "linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url('/background.png')",
+                backgroundImage:
+                    "linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url('/background.png')",
 
-            backgroundSize:
-                "cover",
+                backgroundSize:
+                    "cover",
 
-            backgroundPosition:
-                "center",
+                backgroundPosition:
+                    "center",
 
-            backgroundAttachment:
-                "fixed",
+                backgroundAttachment:
+                    "fixed",
 
-            color:
-                "white",
+                color:
+                    "white",
 
-            overflowX:
-                "hidden"
-        }}
-    >
+                overflowX:
+                    "hidden"
+            }}
+        >
 
-        <style jsx>{`
-            @media (max-width: 600px) {
-                .id-card {
-                    width: 90vw !important;
-                    height: calc(90vw * 1.5) !important;
+            <style jsx>{`
+                @media (max-width: 600px) {
+                    .id-card {
+                        width: 90vw !important;
+                        height: calc(90vw * 1.5) !important;
+                    }
+
+                    .id-photo {
+                        top: 36.33% !important;
+                        left: 21.75% !important;
+                        width: 56.25% !important;
+                        height: 37.5% !important;
+                    }
+
+                    .id-name {
+                        top: 78.33% !important;
+                        left: 7.5% !important;
+                        width: 85% !important;
+                    }
+
+                    .id-number {
+                        top: 86.67% !important;
+                        left: 7.5% !important;
+                        width: 85% !important;
+                    }
                 }
-
-                .id-photo {
-                    top: 36.33% !important;
-                    left: 21.75% !important;
-                    width: 56.25% !important;
-                    height: 37.5% !important;
-                }
-
-                .id-name {
-                    top: 78.33% !important;
-                    left: 7.5% !important;
-                    width: 85% !important;
-                }
-
-                .id-number {
-                    top: 86.67% !important;
-                    left: 7.5% !important;
-                    width: 85% !important;
-                }
-            }
-        `}</style>
+            `}</style>
 
             <section
                 style={{
@@ -879,43 +878,33 @@ return (
                         style={{
                             marginBottom:
                                 "25px",
-			    textAlign:
-				"center"
+
+                            textAlign:
+                                "center"
                         }}
                     >
 
-                        <div
+                        <img
+                            src="/hackerhouse-logo.png"
+                            alt="Hacker House Goa"
                             style={{
-                                fontSize: "30px",
-        			letterSpacing: "5px",
-        			fontWeight: "900",
-        			color: "#D4AF37",
-				textDecoration: "underline",
-				textUnderlineOffset: "6px"
+                                width:
+                                    "280px",
+
+                                maxWidth:
+                                    "100%",
+
+                                height:
+                                    "auto",
+
+                                display:
+                                    "block",
+
+                                margin:
+                                    "0 auto"
                             }}
-                        >
-                            HACKER HOUSE
-                        </div>
-			<div
-        		   style={{
-             			fontSize: "45px",
-            			fontWeight: "900",
-            			lineHeight: "1.2",
-              			color: "#D4AF37",
-				marginTop: "10px"
-            				
-        		  }}
-    			>
-       			 	गोवा
-   		        </div>
-			<div
-    			   style={{
-        			width: "70px",
-        			height: "3px",
-        			background: "#D4AF37",
-        			margin: "5px auto 25px"
-    			  }}	
- 		        />
+                        />
+
                     </div>
 
                     <h1
@@ -968,13 +957,20 @@ return (
                         value={
                             name
                         }
-                            onChange={(e) => {
-        			const value = e.target.value;
+                        onChange={(e) => {
+                            const value =
+                                e.target.value;
 
-        			if (/^[A-Za-z '-]*$/.test(value)) {
-            				setName(value);
-        			}
-    			}}
+                            if (
+                                /^[A-Za-z '-]*$/.test(
+                                    value
+                                )
+                            ) {
+                                setName(
+                                    value
+                                );
+                            }
+                        }}
                         style={{
                             width:
                                 "100%",
@@ -1155,7 +1151,7 @@ return (
                         ref={
                             cardRef
                         }
-			className="id-card"
+                        className="id-card"
                         style={{
                             position:
                                 "relative",
@@ -1175,7 +1171,6 @@ return (
                             overflow:
                                 "hidden",
 
-                            // ID CARD BACKGROUND
                             backgroundImage:
                                 "url('/hackerhouse-bg.jpeg')",
 
@@ -1195,7 +1190,7 @@ return (
                                 src={
                                     facePhoto
                                 }
-				className="id-photo"
+                                className="id-photo"
                                 alt="Participant face"
                                 style={{
                                     position:
@@ -1232,7 +1227,7 @@ return (
                         )}
 
                         <div
-			    className="id-name"
+                            className="id-name"
                             style={{
                                 position:
                                     "absolute",
@@ -1266,7 +1261,7 @@ return (
                         </div>
 
                         <div
-			    className="id-number"
+                            className="id-number"
                             style={{
                                 position:
                                     "absolute",
@@ -1301,7 +1296,7 @@ return (
 
                     </div>
 
-                    <div	
+                    <div
                         style={{
                             width:
                                 "400px",
