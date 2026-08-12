@@ -573,7 +573,7 @@ export default function Home() {
         ctx.fillText(
             name.toUpperCase(),
             600,
-            470 * 3
+            485 * 3
         );
 
         ctx.font =
@@ -582,7 +582,7 @@ export default function Home() {
         ctx.fillText(
             id,
             600,
-            520 * 3
+            535 * 3
         );
 
         ctx.shadowColor =
@@ -761,39 +761,66 @@ export default function Home() {
         );
     }
 
-    return (
-        <main
-            style={{
-                minHeight:
-                    "100vh",
+return (
+    <main
+        style={{
+            minHeight:
+                "100vh",
 
-                margin: 0,
+            margin: 0,
 
-                padding: 0,
+            padding: 0,
 
-                fontFamily:
-                    "Arial, Helvetica, sans-serif",
+            fontFamily:
+                "Arial, Helvetica, sans-serif",
 
-                // INPUT PAGE BACKGROUND
-                backgroundImage:
-                    "linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url('/background.png')",
+            backgroundImage:
+                "linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url('/background.png')",
 
-                backgroundSize:
-                    "cover",
+            backgroundSize:
+                "cover",
 
-                backgroundPosition:
-                    "center",
+            backgroundPosition:
+                "center",
 
-                backgroundAttachment:
-                    "fixed",
+            backgroundAttachment:
+                "fixed",
 
-                color:
-                    "white",
+            color:
+                "white",
 
-                overflowX:
-                    "hidden"
-            }}
-        >
+            overflowX:
+                "hidden"
+        }}
+    >
+
+        <style jsx>{`
+            @media (max-width: 600px) {
+                .id-card {
+                    width: 90vw !important;
+                    height: calc(90vw * 1.5) !important;
+                }
+
+                .id-photo {
+                    top: 36.33% !important;
+                    left: 21.75% !important;
+                    width: 56.25% !important;
+                    height: 37.5% !important;
+                }
+
+                .id-name {
+                    top: 78.33% !important;
+                    left: 7.5% !important;
+                    width: 85% !important;
+                }
+
+                .id-number {
+                    top: 86.67% !important;
+                    left: 7.5% !important;
+                    width: 85% !important;
+                }
+            }
+        `}</style>
 
             <section
                 style={{
@@ -857,37 +884,26 @@ export default function Home() {
 
                         <div
                             style={{
-                                fontSize:
-                                    "13px",
-
-                                letterSpacing:
-                                    "5px",
-
-                                fontWeight:
-                                    "bold"
+                                fontSize: "30px",
+        			letterSpacing: "5px",
+        			fontWeight: "bold",
+        			color: "#D4AF37"
                             }}
                         >
                             HACKER HOUSE
                         </div>
-
-                        <div
-                            style={{
-                                fontSize:
-                                    "55px",
-
-                                fontWeight:
-                                    "900",
-
-                                lineHeight:
-                                    "0.9",
-
-                                letterSpacing:
-                                    "-4px"
-                            }}
-                        >
-                            GOA
-                        </div>
-
+			<div
+        		   style={{
+             			fontSize: "55px",
+            			fontWeight: "900",
+            			lineHeight: "1",
+              			color: "#D4AF37",
+				marginTop: "10px"
+            				
+        		  }}
+    			>
+       			 	गोवा
+   		        </div>
                     </div>
 
                     <h1
@@ -1125,6 +1141,7 @@ export default function Home() {
                         ref={
                             cardRef
                         }
+			className="id-card"
                         style={{
                             position:
                                 "relative",
@@ -1164,6 +1181,7 @@ export default function Home() {
                                 src={
                                     facePhoto
                                 }
+				className="id-photo"
                                 alt="Participant face"
                                 style={{
                                     position:
@@ -1200,6 +1218,7 @@ export default function Home() {
                         )}
 
                         <div
+			    className="id-name"
                             style={{
                                 position:
                                     "absolute",
@@ -1233,6 +1252,7 @@ export default function Home() {
                         </div>
 
                         <div
+			    className="id-number"
                             style={{
                                 position:
                                     "absolute",
@@ -1267,7 +1287,7 @@ export default function Home() {
 
                     </div>
 
-                    <div
+                    <div	
                         style={{
                             width:
                                 "400px",
