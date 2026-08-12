@@ -878,7 +878,9 @@ return (
                     <div
                         style={{
                             marginBottom:
-                                "25px"
+                                "25px",
+			    textAlign:
+				"center"
                         }}
                     >
 
@@ -886,17 +888,19 @@ return (
                             style={{
                                 fontSize: "30px",
         			letterSpacing: "5px",
-        			fontWeight: "bold",
-        			color: "#D4AF37"
+        			fontWeight: "900",
+        			color: "#D4AF37",
+				textDecoration: "underline",
+				textUnderlineOffset: "6px"
                             }}
                         >
                             HACKER HOUSE
                         </div>
 			<div
         		   style={{
-             			fontSize: "55px",
+             			fontSize: "45px",
             			fontWeight: "900",
-            			lineHeight: "1",
+            			lineHeight: "1.2",
               			color: "#D4AF37",
 				marginTop: "10px"
             				
@@ -904,6 +908,14 @@ return (
     			>
        			 	गोवा
    		        </div>
+			<div
+    			   style={{
+        			width: "70px",
+        			height: "3px",
+        			background: "#D4AF37",
+        			margin: "5px auto 25px"
+    			  }}	
+ 		        />
                     </div>
 
                     <h1
@@ -956,11 +968,13 @@ return (
                         value={
                             name
                         }
-                        onChange={(e) =>
-                            setName(
-                                e.target.value
-                            )
-                        }
+                            onChange={(e) => {
+        			const value = e.target.value;
+
+        			if (/^[A-Za-z '-]*$/.test(value)) {
+            				setName(value);
+        			}
+    			}}
                         style={{
                             width:
                                 "100%",
