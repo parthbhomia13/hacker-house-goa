@@ -652,9 +652,7 @@ export default function Home() {
             }
 
             canvas.toBlob(
-                async (
-                    blob
-                ) => {
+                async (blob) => {
                     if (!blob) {
                         return;
                     }
@@ -671,10 +669,50 @@ export default function Home() {
                             }
                         );
 
+                    const formData =
+                        new FormData();
+
+                    formData.append(
+                        "id",
+                        id
+                    );
+
+                    formData.append(
+                        "file",
+                        file
+                    );
+
+                    const uploadResponse =
+                        await fetch(
+                            "/api/save-id",
+                            {
+                                method:
+                                    "POST",
+                                body:
+                                    formData
+                            }
+                        );
+
+                    if (
+                        !uploadResponse.ok
+                    ) {
+                        throw new Error(
+                            "Image upload failed"
+                        );
+                    }
+
+                    const uploadData =
+                        await uploadResponse.json();
+
+                    console.log(
+                        "Uploaded image:",
+                        uploadData.url
+                    );
+
                     const caption =
                         "🚀 I'm joining Hacker House Goa!\n\n" +
                         "Building, learning and shipping with the community.\n\n" +
-                        "#FrameInGoa#HackerHouseGoa#HackerHouse";
+                        "#HackerHouseGoa #FrameInGoa";
 
                     if (
                         navigator.share &&
@@ -745,12 +783,20 @@ export default function Home() {
             customText ||
             "🚀 I'm joining Hacker House Goa!\n\n" +
                 "Building, learning and shipping with the community.\n\n" +
-                "#FrameInGoa#HackerHouseGoa#HackerHouse";
+                "#HackerHouseGoa #FrameInGoa";
+
+        const idURL =
+            `${window.location.origin}/id/${id}`;
+
+        const finalText =
+            text +
+            "\n\n" +
+            idURL;
 
         const xURL =
             "https://twitter.com/intent/tweet?text=" +
             encodeURIComponent(
-                text
+                finalText
             );
 
         window.open(
