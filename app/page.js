@@ -349,28 +349,6 @@ export default function Home() {
         return canvas;
     }
 
-    async function canvasToFile(canvas) {
-        const blob = await new Promise((resolve) => {
-            canvas.toBlob(
-                resolve,
-                "image/jpeg",
-                0.85
-            );
-        });
-
-        if (!blob) {
-            throw new Error("Could not create image.");
-        }
-
-        return new File(
-            [blob],
-            "hacker-house-goa-id.jpg",
-            {
-                type: "image/jpeg"
-            }
-        );
-    }
-
     async function downloadImage() {
         try {
             const canvas = await createFinalCanvas();
@@ -401,16 +379,32 @@ export default function Home() {
 
     async function shareImage() {
         try {
-            const canvas =
-                await createFinalCanvas();
+            const canvas = await createFinalCanvas();
 
             if (!canvas) {
                 alert("Please generate your ID first.");
                 return;
             }
 
-            const file =
-                await canvasToFile(canvas);
+            const blob = await new Promise((resolve) => {
+                canvas.toBlob(
+                    resolve,
+                    "image/jpeg",
+                    0.85
+                );
+            });
+
+            if (!blob) {
+                throw new Error("Could not create image.");
+            }
+
+            const file = new File(
+                [blob],
+                "hacker-house-goa-id.jpg",
+                {
+                    type: "image/jpeg"
+                }
+            );
 
             const caption =
                 "🚀 I'm joining Hacker House Goa!\n\n" +
@@ -448,98 +442,29 @@ export default function Home() {
         }
     }
 
-    async function shareToX() {
-        try {
-            const canvas =
-                await createFinalCanvas();
+    function shareToX() {
+        const caption =
+            "🚀 I'm joining Hacker House Goa!\n\n" +
+            "Building, learning and shipping with the community.\n\n" +
+            "#HackerHouseGoa #FrameInGoa";
 
-            if (!canvas) {
-                alert("Please generate your ID first.");
-                return;
-            }
+        const idURL =
+            `${window.location.origin}/id/${id}`;
 
-            const file =
-                await canvasToFile(canvas);
+        const finalText =
+            caption +
+            "\n\n" +
+            idURL;
 
-            const caption =
-                "🚀 I'm joining Hacker House Goa!\n\n" +
-                "Building, learning and shipping with the community.\n\n" +
-                "#HackerHouseGoa #FrameInGoa";
+        const xURL =
+            "https://twitter.com/intent/tweet?text=" +
+            encodeURIComponent(finalText);
 
-            /*
-             * MOBILE:
-             * Native share sheet with the actual image.
-             * User can choose X.
-             */
-            if (
-                navigator.share &&
-                navigator.canShare &&
-                navigator.canShare({
-                    files: [file]
-                })
-            ) {
-                try {
-                    await navigator.share({
-                        title: "Hacker House Goa",
-                        text: caption,
-                        files: [file]
-                    });
-
-                    return;
-                } catch (error) {
-                    if (error.name === "AbortError") {
-                        return;
-                    }
-                }
-            }
-
-            /*
-             * PC FALLBACK:
-             * Download image and open X with text + ID link.
-             */
-
-            const link =
-                document.createElement("a");
-
-            link.download =
-                "hacker-house-goa-id.jpg";
-
-            link.href = canvas.toDataURL(
-                "image/jpeg",
-                0.85
-            );
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            const idURL =
-                `${window.location.origin}/id/${id}`;
-
-            const finalText =
-                caption +
-                "\n\n" +
-                idURL;
-
-            const xURL =
-                "https://twitter.com/intent/tweet?text=" +
-                encodeURIComponent(finalText);
-
-            window.open(
-                xURL,
-                "_blank",
-                "noopener,noreferrer"
-            );
-        } catch (error) {
-            console.error(
-                "X SHARE ERROR:",
-                error
-            );
-
-            alert(
-                "Could not prepare the X post."
-            );
-        }
+        window.open(
+            xURL,
+            "_blank",
+            "noopener,noreferrer"
+        );
     }
 
     return (
