@@ -366,13 +366,74 @@ export default function Home() {
         return canvas;
     }
 
+    async function canvasToFile(canvas) {
+        const blob = await new Promise((resolve) => {
+            canvas.toBlob(
+                resolve,
+                "image/jpeg",
+                0.85
+            );
+        });
+
+        if (!blob) {
+            throw new Error(
+                "Could not create image."
+            );
+        }
+
+        return new File(
+            [blob],
+            "hacker-house-goa-id.jpg",
+            {
+                type: "image/jpeg"
+            }
+        );
+    }
+
+    async function uploadImage(file) {
+        const formData = new FormData();
+
+        formData.append("id", id);
+        formData.append("file", file);
+
+        const response = await fetch(
+            "/api/save-id",
+            {
+                method: "POST",
+                body: formData
+            }
+        );
+
+        let data = {};
+
+        try {
+            data = await response.json();
+        } catch {}
+
+        if (!response.ok) {
+            console.error(
+                "UPLOAD ERROR:",
+                data
+            );
+
+            throw new Error(
+                data.error ||
+                "Could not upload the image."
+            );
+        }
+
+        return data;
+    }
+
     async function downloadImage() {
         try {
             const canvas =
                 await createFinalCanvas();
 
             if (!canvas) {
-                alert("Please generate your ID first.");
+                alert(
+                    "Please generate your ID first."
+                );
                 return;
             }
 
@@ -397,7 +458,9 @@ export default function Home() {
                 error
             );
 
-            alert("Could not create the image.");
+            alert(
+                "Could not create the image."
+            );
         }
     }
 
@@ -413,34 +476,16 @@ export default function Home() {
                 await createFinalCanvas();
 
             if (!canvas) {
-                alert("Please generate your ID first.");
+                alert(
+                    "Please generate your ID first."
+                );
+
                 setSharing(false);
                 return;
             }
 
-            const blob =
-                await new Promise((resolve) => {
-                    canvas.toBlob(
-                        resolve,
-                        "image/jpeg",
-                        0.85
-                    );
-                });
-
-            if (!blob) {
-                throw new Error(
-                    "Could not create image."
-                );
-            }
-
             const file =
-                new File(
-                    [blob],
-                    "hacker-house-goa-id.jpg",
-                    {
-                        type: "image/jpeg"
-                    }
-                );
+                await canvasToFile(canvas);
 
             const caption =
                 "🚀 I'm joining Hacker House Goa!\n\n" +
@@ -462,24 +507,10 @@ export default function Home() {
                     files: [file]
                 });
             } else {
-                const link =
-                    document.createElement("a");
-
-                link.download =
-                    "hacker-house-goa-id.jpg";
-
-                link.href =
-                    canvas.toDataURL(
-                        "image/jpeg",
-                        0.85
-                    );
-
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                await downloadImage();
 
                 alert(
-                    "Image sharing is not supported on this browser, so the image was downloaded."
+                    "Image sharing is not supported here, so the image was downloaded."
                 );
             }
         } catch (error) {
@@ -509,20 +540,6 @@ export default function Home() {
             return;
         }
 
-        // Open immediately to prevent popup blocking.
-        const xWindow = window.open(
-            "about:blank",
-            "_blank"
-        );
-
-        if (!xWindow) {
-            alert(
-                "Your browser blocked the X popup. Please allow popups for this site."
-            );
-
-            return;
-        }
-
         setSharingX(true);
 
         try {
@@ -530,8 +547,6 @@ export default function Home() {
                 await createFinalCanvas();
 
             if (!canvas) {
-                xWindow.close();
-
                 alert(
                     "Please generate your ID first."
                 );
@@ -540,84 +555,77 @@ export default function Home() {
                 return;
             }
 
-            const blob =
-                await new Promise((resolve) => {
-                    canvas.toBlob(
-                        resolve,
-                        "image/jpeg",
-                        0.85
-                    );
-                });
-
-            if (!blob) {
-                xWindow.close();
-
-                throw new Error(
-                    "Could not create image."
-                );
-            }
-
             const file =
-                new File(
-                    [blob],
-                    "hacker-house-goa-id.jpg",
-                    {
-                        type: "image/jpeg"
-                    }
-                );
-
-            const formData =
-                new FormData();
-
-            formData.append(
-                "id",
-                id
-            );
-
-            formData.append(
-                "file",
-                file
-            );
-
-            const response =
-                await fetch(
-                    "/api/save-id",
-                    {
-                        method: "POST",
-                        body: formData
-                    }
-                );
-
-            let data = {};
-
-            try {
-                data =
-                    await response.json();
-            } catch {}
-
-            if (!response.ok) {
-                console.error(
-                    "UPLOAD ERROR:",
-                    data
-                );
-
-                xWindow.close();
-
-                throw new Error(
-                    data.error ||
-                    "Could not upload the image."
-                );
-            }
-
-            console.log(
-                "Uploaded image:",
-                data.url
-            );
+                await canvasToFile(canvas);
 
             const caption =
                 "🚀 I'm joining Hacker House Goa!\n\n" +
                 "Building, learning and shipping with the community.\n\n" +
                 "#HackerHouseGoa #FrameInGoa";
+
+            /*
+             * MOBILE:
+             *
+             * Use the native share sheet with the
+             * actual image file.
+             *
+             * The user can select X from the
+             * native share sheet.
+             */
+            if (
+                navigator.share &&
+                navigator.canShare &&
+                navigator.canShare({
+                    files: [file]
+                })
+            ) {
+                try {
+                    await navigator.share({
+                        title:
+                            "Hacker House Goa",
+                        text:
+                            caption,
+                        files: [file]
+                    });
+
+                    setSharingX(false);
+                    return;
+                } catch (error) {
+                    if (
+                        error.name ===
+                        "AbortError"
+                    ) {
+                        setSharingX(false);
+                        return;
+                    }
+                }
+            }
+
+            /*
+             * DESKTOP FALLBACK:
+             *
+             * X cannot receive a file attachment
+             * through the tweet intent URL.
+             *
+             * Download the image and open X with
+             * the caption + participant URL.
+             */
+
+            const link =
+                document.createElement("a");
+
+            link.download =
+                "hacker-house-goa-id.jpg";
+
+            link.href =
+                canvas.toDataURL(
+                    "image/jpeg",
+                    0.85
+                );
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
 
             const idURL =
                 `${window.location.origin}/id/${id}`;
@@ -633,20 +641,16 @@ export default function Home() {
                     finalText
                 );
 
-            xWindow.location.href =
-                xURL;
+            window.open(
+                xURL,
+                "_blank",
+                "noopener,noreferrer"
+            );
         } catch (error) {
             console.error(
                 "X SHARE ERROR:",
                 error
             );
-
-            if (
-                xWindow &&
-                !xWindow.closed
-            ) {
-                xWindow.close();
-            }
 
             alert(
                 "Could not prepare the X post: " +
