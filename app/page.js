@@ -12,6 +12,7 @@ export default function Home() {
     const [loading, setLoading] = useState(true);
     const [generating, setGenerating] = useState(false);
     const [sharing, setSharing] = useState(false);
+    const [sharingX, setSharingX] = useState(false);
 
     const cardRef = useRef(null);
 
@@ -23,6 +24,7 @@ export default function Home() {
             } catch (error) {
                 console.error("MODEL LOADING ERROR:", error);
                 setLoading(false);
+
                 alert(
                     "Face detector could not be loaded. Make sure the models are inside public/models."
                 );
@@ -35,7 +37,9 @@ export default function Home() {
     function handlePhotoChange(event) {
         const selectedPhoto = event.target.files?.[0];
 
-        if (!selectedPhoto) return;
+        if (!selectedPhoto) {
+            return;
+        }
 
         const fileName = selectedPhoto.name.toLowerCase();
 
@@ -55,8 +59,14 @@ export default function Home() {
             return;
         }
 
+        if (photoURL) {
+            URL.revokeObjectURL(photoURL);
+        }
+
+        const url = URL.createObjectURL(selectedPhoto);
+
         setPhoto(selectedPhoto);
-        setPhotoURL(URL.createObjectURL(selectedPhoto));
+        setPhotoURL(url);
         setFacePhoto("");
         setId("");
     }
@@ -94,6 +104,7 @@ export default function Home() {
                 alert(
                     "No face detected. Please select a clear photo with one face."
                 );
+
                 setGenerating(false);
                 return;
             }
@@ -102,6 +113,7 @@ export default function Home() {
                 alert(
                     "Multiple faces detected. Please select a photo with only one person."
                 );
+
                 setGenerating(false);
                 return;
             }
@@ -116,7 +128,9 @@ export default function Home() {
             let cropY = box.y - marginTop;
             let cropWidth = box.width + marginX * 2;
             let cropHeight =
-                box.height + marginTop + marginBottom;
+                box.height +
+                marginTop +
+                marginBottom;
 
             if (cropX < 0) {
                 cropWidth += cropX;
@@ -161,11 +175,16 @@ export default function Home() {
                 cropHeight
             );
 
-            setFacePhoto(canvas.toDataURL("image/png"));
+            const croppedFace = canvas.toDataURL("image/png");
+
+            setFacePhoto(croppedFace);
 
             const newId =
                 "ID-" +
-                Math.floor(1000 + Math.random() * 9000);
+                Math.floor(
+                    1000 +
+                    Math.random() * 9000
+                );
 
             setId(newId);
             setGenerating(false);
@@ -209,7 +228,9 @@ export default function Home() {
 
         const ctx = canvas.getContext("2d");
 
-        if (!ctx) return null;
+        if (!ctx) {
+            return null;
+        }
 
         const background = await loadImage(
             "/hackerhouse-bg.jpeg"
@@ -265,7 +286,8 @@ export default function Home() {
         ctx.closePath();
         ctx.clip();
 
-        const faceRatio = face.width / face.height;
+        const faceRatio =
+            face.width / face.height;
 
         let sourceWidth;
         let sourceHeight;
@@ -275,13 +297,15 @@ export default function Home() {
         if (faceRatio > 1) {
             sourceHeight = face.height;
             sourceWidth = face.height;
-            sourceX = (face.width - sourceWidth) / 2;
+            sourceX =
+                (face.width - sourceWidth) / 2;
             sourceY = 0;
         } else {
             sourceWidth = face.width;
             sourceHeight = face.width;
             sourceX = 0;
-            sourceY = (face.height - sourceHeight) / 2;
+            sourceY =
+                (face.height - sourceHeight) / 2;
         }
 
         ctx.drawImage(
@@ -308,14 +332,14 @@ export default function Home() {
             Math.PI * 2
         );
 
-        ctx.lineWidth = 21;
+        ctx.lineWidth = 7 * 3;
         ctx.strokeStyle = "#D4AF37";
         ctx.stroke();
 
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillStyle = "white";
 
+        ctx.fillStyle = "white";
         ctx.shadowColor = "black";
         ctx.shadowBlur = 12;
         ctx.shadowOffsetX = 6;
@@ -342,91 +366,15 @@ export default function Home() {
         return canvas;
     }
 
-    function canvasToBlob(canvas) {
-        return new Promise((resolve) => {
-            canvas.toBlob(
-                resolve,
-                "image/jpeg",
-                0.85
-            );
-        });
-    }
-
-    async function uploadImage(canvas) {
-        const blob = await canvasToBlob(canvas);
-
-        if (!blob) {
-            throw new Error(
-                "Could not create image blob"
-            );
-        }
-
-        const file = new File(
-            [blob],
-            "hacker-house-goa-id.jpg",
-            {
-                type: "image/jpeg"
-            }
-        );
-
-        const formData = new FormData();
-
-        formData.append("id", id);
-        formData.append("file", file);
-
-        const response = await fetch(
-            "/api/save-id",
-            {
-                method: "POST",
-                body: formData
-            }
-        );
-
-        let data = {};
-
-        try {
-            data = await response.json();
-        } catch {
-            data = {};
-        }
-
-        if (!response.ok) {
-            console.error("UPLOAD ERROR:", data);
-
-            throw new Error(
-                data.error ||
-                "Image upload failed"
-            );
-        }
-
-        console.log(
-            "Uploaded image:",
-            data.url
-        );
-
-        return {
-            file,
-            url: data.url
-        };
-    }
-
     async function downloadImage() {
         try {
             const canvas =
                 await createFinalCanvas();
 
             if (!canvas) {
-                alert(
-                    "Please generate your ID first."
-                );
+                alert("Please generate your ID first.");
                 return;
             }
-
-            const jpeg =
-                canvas.toDataURL(
-                    "image/jpeg",
-                    0.85
-                );
 
             const link =
                 document.createElement("a");
@@ -434,7 +382,11 @@ export default function Home() {
             link.download =
                 "hacker-house-goa-id.jpg";
 
-            link.href = jpeg;
+            link.href =
+                canvas.toDataURL(
+                    "image/jpeg",
+                    0.85
+                );
 
             document.body.appendChild(link);
             link.click();
@@ -445,14 +397,14 @@ export default function Home() {
                 error
             );
 
-            alert(
-                "Could not create the image."
-            );
+            alert("Could not create the image.");
         }
     }
 
     async function shareImage() {
-        if (sharing) return;
+        if (sharing) {
+            return;
+        }
 
         setSharing(true);
 
@@ -461,19 +413,37 @@ export default function Home() {
                 await createFinalCanvas();
 
             if (!canvas) {
-                alert(
-                    "Please generate your ID first."
-                );
-
+                alert("Please generate your ID first.");
                 setSharing(false);
                 return;
             }
 
-            const result =
-                await uploadImage(canvas);
+            const blob =
+                await new Promise((resolve) => {
+                    canvas.toBlob(
+                        resolve,
+                        "image/jpeg",
+                        0.85
+                    );
+                });
+
+            if (!blob) {
+                throw new Error(
+                    "Could not create image."
+                );
+            }
+
+            const file =
+                new File(
+                    [blob],
+                    "hacker-house-goa-id.jpg",
+                    {
+                        type: "image/jpeg"
+                    }
+                );
 
             const caption =
-                "I'm joining Hacker House Goa!\n\n" +
+                "🚀 I'm joining Hacker House Goa!\n\n" +
                 "Building, learning and shipping with the community.\n\n" +
                 "#HackerHouseGoa #FrameInGoa";
 
@@ -481,43 +451,53 @@ export default function Home() {
                 navigator.share &&
                 navigator.canShare &&
                 navigator.canShare({
-                    files: [result.file]
+                    files: [file]
                 })
             ) {
-                try {
-                    await navigator.share({
-                        title:
-                            "Hacker House Goa",
-                        text:
-                            caption,
-                        files: [
-                            result.file
-                        ]
-                    });
+                await navigator.share({
+                    title:
+                        "Hacker House Goa",
+                    text:
+                        caption,
+                    files: [file]
+                });
+            } else {
+                const link =
+                    document.createElement("a");
 
-                    setSharing(false);
-                    return;
-                } catch (error) {
-                    if (
-                        error.name ===
-                        "AbortError"
-                    ) {
-                        setSharing(false);
-                        return;
-                    }
-                }
+                link.download =
+                    "hacker-house-goa-id.jpg";
+
+                link.href =
+                    canvas.toDataURL(
+                        "image/jpeg",
+                        0.85
+                    );
+
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                alert(
+                    "Image sharing is not supported on this browser, so the image was downloaded."
+                );
+            }
+        } catch (error) {
+            if (
+                error.name ===
+                "AbortError"
+            ) {
+                setSharing(false);
+                return;
             }
 
-            openXShare(caption);
-        } catch (error) {
             console.error(
                 "SHARE ERROR:",
                 error
             );
 
             alert(
-                "Could not upload/share the image: " +
-                error.message
+                "Could not share the image."
             );
         }
 
@@ -525,66 +505,156 @@ export default function Home() {
     }
 
     async function shareToX() {
-        if (sharing) return;
+        if (sharingX) {
+            return;
+        }
 
-        setSharing(true);
+        // Open immediately to prevent popup blocking.
+        const xWindow = window.open(
+            "about:blank",
+            "_blank"
+        );
+
+        if (!xWindow) {
+            alert(
+                "Your browser blocked the X popup. Please allow popups for this site."
+            );
+
+            return;
+        }
+
+        setSharingX(true);
 
         try {
             const canvas =
                 await createFinalCanvas();
 
             if (!canvas) {
+                xWindow.close();
+
                 alert(
                     "Please generate your ID first."
                 );
 
-                setSharing(false);
+                setSharingX(false);
                 return;
             }
 
-            await uploadImage(canvas);
+            const blob =
+                await new Promise((resolve) => {
+                    canvas.toBlob(
+                        resolve,
+                        "image/jpeg",
+                        0.85
+                    );
+                });
+
+            if (!blob) {
+                xWindow.close();
+
+                throw new Error(
+                    "Could not create image."
+                );
+            }
+
+            const file =
+                new File(
+                    [blob],
+                    "hacker-house-goa-id.jpg",
+                    {
+                        type: "image/jpeg"
+                    }
+                );
+
+            const formData =
+                new FormData();
+
+            formData.append(
+                "id",
+                id
+            );
+
+            formData.append(
+                "file",
+                file
+            );
+
+            const response =
+                await fetch(
+                    "/api/save-id",
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
+
+            let data = {};
+
+            try {
+                data =
+                    await response.json();
+            } catch {}
+
+            if (!response.ok) {
+                console.error(
+                    "UPLOAD ERROR:",
+                    data
+                );
+
+                xWindow.close();
+
+                throw new Error(
+                    data.error ||
+                    "Could not upload the image."
+                );
+            }
+
+            console.log(
+                "Uploaded image:",
+                data.url
+            );
 
             const caption =
-                "I'm joining Hacker House Goa!\n\n" +
+                "🚀 I'm joining Hacker House Goa!\n\n" +
                 "Building, learning and shipping with the community.\n\n" +
                 "#HackerHouseGoa #FrameInGoa";
 
-            openXShare(caption);
+            const idURL =
+                `${window.location.origin}/id/${id}`;
+
+            const finalText =
+                caption +
+                "\n\n" +
+                idURL;
+
+            const xURL =
+                "https://twitter.com/intent/tweet?text=" +
+                encodeURIComponent(
+                    finalText
+                );
+
+            xWindow.location.href =
+                xURL;
         } catch (error) {
             console.error(
                 "X SHARE ERROR:",
                 error
             );
 
+            if (
+                xWindow &&
+                !xWindow.closed
+            ) {
+                xWindow.close();
+            }
+
             alert(
-                "Could not upload the image: " +
+                "Could not prepare the X post: " +
                 error.message
             );
         }
 
-        setSharing(false);
-    }
-
-    function openXShare(customText) {
-        const idURL =
-            window.location.origin +
-            "/id/" +
-            id;
-
-        const finalText =
-            customText +
-            "\n\n" +
-            idURL;
-
-        const xURL =
-            "https://twitter.com/intent/tweet?text=" +
-            encodeURIComponent(finalText);
-
-        window.open(
-            xURL,
-            "_blank",
-            "noopener,noreferrer"
-        );
+        setSharingX(false);
     }
 
     return (
@@ -629,6 +699,10 @@ export default function Home() {
                         left: 7.5% !important;
                         width: 85% !important;
                     }
+
+                    .action-buttons {
+                        width: 90vw !important;
+                    }
                 }
             `}</style>
 
@@ -652,7 +726,8 @@ export default function Home() {
                             "rgba(0,0,0,0.60)",
                         border:
                             "1px solid rgba(255,255,255,0.18)",
-                        backdropFilter: "blur(15px)",
+                        backdropFilter:
+                            "blur(15px)",
                         boxShadow:
                             "0 25px 70px rgba(0,0,0,0.5)",
                         boxSizing: "border-box"
@@ -735,7 +810,8 @@ export default function Home() {
                             color: "white",
                             outline: "none",
                             marginBottom: "20px",
-                            boxSizing: "border-box"
+                            boxSizing:
+                                "border-box"
                         }}
                     />
 
@@ -764,7 +840,8 @@ export default function Home() {
                             border:
                                 "1px solid #444",
                             marginBottom: "25px",
-                            boxSizing: "border-box"
+                            boxSizing:
+                                "border-box"
                         }}
                     />
 
@@ -839,7 +916,8 @@ export default function Home() {
                             backgroundImage:
                                 "url('/hackerhouse-bg.jpeg')",
                             backgroundSize: "cover",
-                            backgroundPosition: "center",
+                            backgroundPosition:
+                                "center",
                             boxShadow:
                                 "0 15px 40px rgba(0,0,0,0.5)"
                         }}
@@ -857,6 +935,8 @@ export default function Home() {
                                     width: "225px",
                                     height: "225px",
                                     objectFit: "cover",
+                                    objectPosition:
+                                        "center center",
                                     borderRadius:
                                         "50%",
                                     border:
@@ -907,6 +987,7 @@ export default function Home() {
                     </div>
 
                     <div
+                        className="action-buttons"
                         style={{
                             width: "400px",
                             maxWidth: "90vw",
@@ -935,7 +1016,7 @@ export default function Home() {
                                     "pointer"
                             }}
                         >
-                            Download
+                            ↓ Download
                         </button>
 
                         <button
@@ -953,7 +1034,7 @@ export default function Home() {
                                     "12px",
                                 background:
                                     sharing
-                                        ? "#555"
+                                        ? "#333"
                                         : "#171717",
                                 color: "white",
                                 fontWeight:
@@ -965,7 +1046,7 @@ export default function Home() {
                             }}
                         >
                             {sharing
-                                ? "Uploading..."
+                                ? "Sharing..."
                                 : "Share"}
                         </button>
 
@@ -974,7 +1055,7 @@ export default function Home() {
                                 shareToX
                             }
                             disabled={
-                                sharing
+                                sharingX
                             }
                             style={{
                                 gridColumn:
@@ -985,22 +1066,22 @@ export default function Home() {
                                 borderRadius:
                                     "12px",
                                 background:
-                                    sharing
+                                    sharingX
                                         ? "#333"
                                         : "#000",
                                 color: "white",
                                 fontWeight:
                                     "bold",
                                 cursor:
-                                    sharing
+                                    sharingX
                                         ? "not-allowed"
                                         : "pointer",
                                 fontSize:
                                     "15px"
                             }}
                         >
-                            {sharing
-                                ? "Uploading..."
+                            {sharingX
+                                ? "Preparing X..."
                                 : "𝕏 Share to X"}
                         </button>
                     </div>
