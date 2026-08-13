@@ -11,8 +11,6 @@ export default function Home() {
     const [id, setId] = useState("");
     const [loading, setLoading] = useState(true);
     const [generating, setGenerating] = useState(false);
-    const [sharing, setSharing] = useState(false);
-    const [sharingX, setSharingX] = useState(false);
 
     const cardRef = useRef(null);
 
@@ -24,7 +22,6 @@ export default function Home() {
             } catch (error) {
                 console.error("MODEL LOADING ERROR:", error);
                 setLoading(false);
-
                 alert(
                     "Face detector could not be loaded. Make sure the models are inside public/models."
                 );
@@ -37,9 +34,7 @@ export default function Home() {
     function handlePhotoChange(event) {
         const selectedPhoto = event.target.files?.[0];
 
-        if (!selectedPhoto) {
-            return;
-        }
+        if (!selectedPhoto) return;
 
         const fileName = selectedPhoto.name.toLowerCase();
 
@@ -104,7 +99,6 @@ export default function Home() {
                 alert(
                     "No face detected. Please select a clear photo with one face."
                 );
-
                 setGenerating(false);
                 return;
             }
@@ -113,7 +107,6 @@ export default function Home() {
                 alert(
                     "Multiple faces detected. Please select a photo with only one person."
                 );
-
                 setGenerating(false);
                 return;
             }
@@ -128,9 +121,7 @@ export default function Home() {
             let cropY = box.y - marginTop;
             let cropWidth = box.width + marginX * 2;
             let cropHeight =
-                box.height +
-                marginTop +
-                marginBottom;
+                box.height + marginTop + marginBottom;
 
             if (cropX < 0) {
                 cropWidth += cropX;
@@ -175,16 +166,11 @@ export default function Home() {
                 cropHeight
             );
 
-            const croppedFace = canvas.toDataURL("image/png");
-
-            setFacePhoto(croppedFace);
+            setFacePhoto(canvas.toDataURL("image/png"));
 
             const newId =
                 "ID-" +
-                Math.floor(
-                    1000 +
-                    Math.random() * 9000
-                );
+                Math.floor(1000 + Math.random() * 9000);
 
             setId(newId);
             setGenerating(false);
@@ -228,9 +214,7 @@ export default function Home() {
 
         const ctx = canvas.getContext("2d");
 
-        if (!ctx) {
-            return null;
-        }
+        if (!ctx) return null;
 
         const background = await loadImage(
             "/hackerhouse-bg.jpeg"
@@ -286,8 +270,7 @@ export default function Home() {
         ctx.closePath();
         ctx.clip();
 
-        const faceRatio =
-            face.width / face.height;
+        const faceRatio = face.width / face.height;
 
         let sourceWidth;
         let sourceHeight;
@@ -376,9 +359,7 @@ export default function Home() {
         });
 
         if (!blob) {
-            throw new Error(
-                "Could not create image."
-            );
+            throw new Error("Could not create image.");
         }
 
         return new File(
@@ -390,97 +371,41 @@ export default function Home() {
         );
     }
 
-    async function uploadImage(file) {
-        const formData = new FormData();
-
-        formData.append("id", id);
-        formData.append("file", file);
-
-        const response = await fetch(
-            "/api/save-id",
-            {
-                method: "POST",
-                body: formData
-            }
-        );
-
-        let data = {};
-
-        try {
-            data = await response.json();
-        } catch {}
-
-        if (!response.ok) {
-            console.error(
-                "UPLOAD ERROR:",
-                data
-            );
-
-            throw new Error(
-                data.error ||
-                "Could not upload the image."
-            );
-        }
-
-        return data;
-    }
-
     async function downloadImage() {
         try {
-            const canvas =
-                await createFinalCanvas();
+            const canvas = await createFinalCanvas();
 
             if (!canvas) {
-                alert(
-                    "Please generate your ID first."
-                );
+                alert("Please generate your ID first.");
                 return;
             }
 
-            const link =
-                document.createElement("a");
+            const link = document.createElement("a");
 
             link.download =
                 "hacker-house-goa-id.jpg";
 
-            link.href =
-                canvas.toDataURL(
-                    "image/jpeg",
-                    0.85
-                );
+            link.href = canvas.toDataURL(
+                "image/jpeg",
+                0.85
+            );
 
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         } catch (error) {
-            console.error(
-                "DOWNLOAD ERROR:",
-                error
-            );
-
-            alert(
-                "Could not create the image."
-            );
+            console.error("DOWNLOAD ERROR:", error);
+            alert("Could not create the image.");
         }
     }
 
     async function shareImage() {
-        if (sharing) {
-            return;
-        }
-
-        setSharing(true);
-
         try {
             const canvas =
                 await createFinalCanvas();
 
             if (!canvas) {
-                alert(
-                    "Please generate your ID first."
-                );
-
-                setSharing(false);
+                alert("Please generate your ID first.");
                 return;
             }
 
@@ -500,58 +425,36 @@ export default function Home() {
                 })
             ) {
                 await navigator.share({
-                    title:
-                        "Hacker House Goa",
-                    text:
-                        caption,
+                    title: "Hacker House Goa",
+                    text: caption,
                     files: [file]
                 });
-            } else {
-                await downloadImage();
 
-                alert(
-                    "Image sharing is not supported here, so the image was downloaded."
-                );
-            }
-        } catch (error) {
-            if (
-                error.name ===
-                "AbortError"
-            ) {
-                setSharing(false);
                 return;
             }
 
-            console.error(
-                "SHARE ERROR:",
-                error
-            );
+            await downloadImage();
 
             alert(
-                "Could not share the image."
+                "Image sharing is not supported here, so the image was downloaded."
             );
-        }
+        } catch (error) {
+            if (error.name === "AbortError") {
+                return;
+            }
 
-        setSharing(false);
+            console.error("SHARE ERROR:", error);
+            alert("Could not share the image.");
+        }
     }
 
     async function shareToX() {
-        if (sharingX) {
-            return;
-        }
-
-        setSharingX(true);
-
         try {
             const canvas =
                 await createFinalCanvas();
 
             if (!canvas) {
-                alert(
-                    "Please generate your ID first."
-                );
-
-                setSharingX(false);
+                alert("Please generate your ID first.");
                 return;
             }
 
@@ -565,12 +468,8 @@ export default function Home() {
 
             /*
              * MOBILE:
-             *
-             * Use the native share sheet with the
-             * actual image file.
-             *
-             * The user can select X from the
-             * native share sheet.
+             * Native share sheet with the actual image.
+             * User can choose X.
              */
             if (
                 navigator.share &&
@@ -581,34 +480,22 @@ export default function Home() {
             ) {
                 try {
                     await navigator.share({
-                        title:
-                            "Hacker House Goa",
-                        text:
-                            caption,
+                        title: "Hacker House Goa",
+                        text: caption,
                         files: [file]
                     });
 
-                    setSharingX(false);
                     return;
                 } catch (error) {
-                    if (
-                        error.name ===
-                        "AbortError"
-                    ) {
-                        setSharingX(false);
+                    if (error.name === "AbortError") {
                         return;
                     }
                 }
             }
 
             /*
-             * DESKTOP FALLBACK:
-             *
-             * X cannot receive a file attachment
-             * through the tweet intent URL.
-             *
-             * Download the image and open X with
-             * the caption + participant URL.
+             * PC FALLBACK:
+             * Download image and open X with text + ID link.
              */
 
             const link =
@@ -617,11 +504,10 @@ export default function Home() {
             link.download =
                 "hacker-house-goa-id.jpg";
 
-            link.href =
-                canvas.toDataURL(
-                    "image/jpeg",
-                    0.85
-                );
+            link.href = canvas.toDataURL(
+                "image/jpeg",
+                0.85
+            );
 
             document.body.appendChild(link);
             link.click();
@@ -637,9 +523,7 @@ export default function Home() {
 
             const xURL =
                 "https://twitter.com/intent/tweet?text=" +
-                encodeURIComponent(
-                    finalText
-                );
+                encodeURIComponent(finalText);
 
             window.open(
                 xURL,
@@ -653,12 +537,9 @@ export default function Home() {
             );
 
             alert(
-                "Could not prepare the X post: " +
-                error.message
+                "Could not prepare the X post."
             );
         }
-
-        setSharingX(false);
     }
 
     return (
@@ -703,10 +584,6 @@ export default function Home() {
                         left: 7.5% !important;
                         width: 85% !important;
                     }
-
-                    .action-buttons {
-                        width: 90vw !important;
-                    }
                 }
             `}</style>
 
@@ -730,8 +607,7 @@ export default function Home() {
                             "rgba(0,0,0,0.60)",
                         border:
                             "1px solid rgba(255,255,255,0.18)",
-                        backdropFilter:
-                            "blur(15px)",
+                        backdropFilter: "blur(15px)",
                         boxShadow:
                             "0 25px 70px rgba(0,0,0,0.5)",
                         boxSizing: "border-box"
@@ -772,9 +648,8 @@ export default function Home() {
                             marginBottom: "25px"
                         }}
                     >
-                        Upload your photo and
-                        generate your Hacker
-                        House Goa ID card.
+                        Upload your photo and generate
+                        your Hacker House Goa ID card.
                     </p>
 
                     <label
@@ -814,8 +689,7 @@ export default function Home() {
                             color: "white",
                             outline: "none",
                             marginBottom: "20px",
-                            boxSizing:
-                                "border-box"
+                            boxSizing: "border-box"
                         }}
                     />
 
@@ -832,9 +706,7 @@ export default function Home() {
                     <input
                         type="file"
                         accept="image/jpeg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic,.heif"
-                        onChange={
-                            handlePhotoChange
-                        }
+                        onChange={handlePhotoChange}
                         style={{
                             width: "100%",
                             padding: "12px",
@@ -844,8 +716,7 @@ export default function Home() {
                             border:
                                 "1px solid #444",
                             marginBottom: "25px",
-                            boxSizing:
-                                "border-box"
+                            boxSizing: "border-box"
                         }}
                     />
 
@@ -991,7 +862,6 @@ export default function Home() {
                     </div>
 
                     <div
-                        className="action-buttons"
                         style={{
                             width: "400px",
                             maxWidth: "90vw",
@@ -1003,33 +873,23 @@ export default function Home() {
                         }}
                     >
                         <button
-                            onClick={
-                                downloadImage
-                            }
+                            onClick={downloadImage}
                             style={{
                                 padding: "15px",
                                 border: "none",
                                 borderRadius:
                                     "12px",
-                                background:
-                                    "white",
+                                background: "white",
                                 color: "black",
-                                fontWeight:
-                                    "bold",
-                                cursor:
-                                    "pointer"
+                                fontWeight: "bold",
+                                cursor: "pointer"
                             }}
                         >
                             ↓ Download
                         </button>
 
                         <button
-                            onClick={
-                                shareImage
-                            }
-                            disabled={
-                                sharing
-                            }
+                            onClick={shareImage}
                             style={{
                                 padding: "15px",
                                 border:
@@ -1037,30 +897,17 @@ export default function Home() {
                                 borderRadius:
                                     "12px",
                                 background:
-                                    sharing
-                                        ? "#333"
-                                        : "#171717",
+                                    "#171717",
                                 color: "white",
-                                fontWeight:
-                                    "bold",
-                                cursor:
-                                    sharing
-                                        ? "not-allowed"
-                                        : "pointer"
+                                fontWeight: "bold",
+                                cursor: "pointer"
                             }}
                         >
-                            {sharing
-                                ? "Sharing..."
-                                : "Share"}
+                            Share
                         </button>
 
                         <button
-                            onClick={
-                                shareToX
-                            }
-                            disabled={
-                                sharingX
-                            }
+                            onClick={shareToX}
                             style={{
                                 gridColumn:
                                     "span 2",
@@ -1069,24 +916,14 @@ export default function Home() {
                                     "1px solid #333",
                                 borderRadius:
                                     "12px",
-                                background:
-                                    sharingX
-                                        ? "#333"
-                                        : "#000",
+                                background: "#000",
                                 color: "white",
-                                fontWeight:
-                                    "bold",
-                                cursor:
-                                    sharingX
-                                        ? "not-allowed"
-                                        : "pointer",
-                                fontSize:
-                                    "15px"
+                                fontWeight: "bold",
+                                cursor: "pointer",
+                                fontSize: "15px"
                             }}
                         >
-                            {sharingX
-                                ? "Preparing X..."
-                                : "𝕏 Share to X"}
+                            𝕏 Share to X
                         </button>
                     </div>
                 </section>
