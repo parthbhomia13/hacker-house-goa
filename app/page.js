@@ -674,9 +674,7 @@ export default function Home() {
                     const caption =
                         "🚀 I'm joining Hacker House Goa!\n\n" +
                         "Building, learning and shipping with the community.\n\n" +
-                        "#FrameInGoa 
-#HackerHouseGoa 
-#HackerHouse";
+                        "#FrameInGoa#HackerHouseGoa#HackerHouse";
 
                     if (
                         navigator.share &&
@@ -747,9 +745,7 @@ export default function Home() {
             customText ||
             "🚀 I'm joining Hacker House Goa!\n\n" +
                 "Building, learning and shipping with the community.\n\n" +
-                "#FrameInGoa
-#HackerHouseGoa 
-#HackerHouse";
+                "#FrameInGoa#HackerHouseGoa#HackerHouse";
 
         const xURL =
             "https://twitter.com/intent/tweet?text=" +
