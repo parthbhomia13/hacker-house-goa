@@ -10,17 +10,26 @@ export async function generateMetadata({ params }) {
     const image = blobs[0]?.url;
 
     return {
+        metadataBase: new URL(
+            "https://hacker-house-goa-lilac.vercel.app"
+        ),
+
         title: `Hacker House Goa - ${id}`,
 
         description:
             "Hacker House Goa participant ID",
 
         openGraph: {
+            type: "website",
+
             title:
                 `Hacker House Goa - ${id}`,
 
             description:
                 "Hacker House Goa participant ID",
+
+            url:
+                `/id/${id}`,
 
             images: image
                 ? [
@@ -36,7 +45,8 @@ export async function generateMetadata({ params }) {
         },
 
         twitter: {
-            card: "summary_large_image",
+            card:
+                "summary_large_image",
 
             title:
                 `Hacker House Goa - ${id}`,
